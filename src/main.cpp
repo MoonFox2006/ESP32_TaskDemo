@@ -17,6 +17,7 @@ static void taskProducer(void *pvParam) {
     array[i] = random(256);
   }
   xSemaphoreGive(semaphore);
+  delete (params_t*)pvParam;
   vTaskDelete(NULL);
 }
 
@@ -48,13 +49,13 @@ void setup() {
   uint32_t time = micros();
 
   for (uint8_t i = 0; i < tasks; ++i) {
-    params_t params;
+    params_t *params = new params_t;
 
-    params.from = ARRAY_SIZE / tasks * i;
-    params.to = params.from + ARRAY_SIZE / tasks;
-    if (xTaskCreatePinnedToCore(&taskProducer, "producer", 1024, &params, 1, NULL, i & 0x01) != pdPASS)
+    params->from = ARRAY_SIZE / tasks * i;
+    params->to = params->from + ARRAY_SIZE / tasks;
+    if (xTaskCreatePinnedToCore(&taskProducer, "producer", 1024, params, 1, NULL, i & 0x01) != pdPASS)
       halt("Error creating task!");
-//    Serial.printf("Task #%u (%u .. %u)\r\n", i, params.from, params.to - 1);
+//    Serial.printf("Task #%u (%u .. %u)\r\n", i, params->from, params->to - 1);
   }
 
   for (uint8_t i = 0; i < tasks; ++i) {
@@ -72,3 +73,4 @@ void setup() {
 }
 
 void loop() {}
+
